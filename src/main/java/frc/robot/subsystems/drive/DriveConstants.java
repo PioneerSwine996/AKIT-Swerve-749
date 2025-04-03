@@ -41,7 +41,7 @@ public class DriveConstants {
   public static final Rotation2d backRightZeroRotation = new Rotation2d(0.0);
 
   // Device CAN IDs
-  public static final int pigeonCanId = 9;
+  public static final int pigeonCanId = 13;
 
   public static final int frontLeftDriveCanId = 1;
   public static final int backLeftDriveCanId = 3;
@@ -63,7 +63,7 @@ public class DriveConstants {
   public static final double driveMotorReduction =
       (50.0 / 14.0)
           * (17.0 / 27.0)
-          * (45.0 / 15.0); // MAXSwervwith 14 pinion teeth and 22 spur teeth
+          * (45.0 / 15.0); // MAXSwerve with 14 pinion teeth and 22 spur teeth
   public static final DCMotor driveGearbox = DCMotor.getNeoVortex(1);
 
   // Drive encoder configuration
