@@ -43,15 +43,15 @@ public class DriveConstants {
   // Device CAN IDs
   public static final int pigeonCanId = 13;
 
-  public static final int frontLeftDriveCanId = 1;
-  public static final int backLeftDriveCanId = 3;
-  public static final int frontRightDriveCanId = 5;
-  public static final int backRightDriveCanId = 7;
+  public static final int frontLeftDriveCanId = 5;
+  public static final int backLeftDriveCanId = 7;
+  public static final int frontRightDriveCanId = 3;
+  public static final int backRightDriveCanId = 1;
 
-  public static final int frontLeftTurnCanId = 2;
-  public static final int backLeftTurnCanId = 4;
-  public static final int frontRightTurnCanId = 6;
-  public static final int backRightTurnCanId = 8;
+  public static final int frontLeftTurnCanId = 6;
+  public static final int backLeftTurnCanId = 8;
+  public static final int frontRightTurnCanId = 4;
+  public static final int backRightTurnCanId = 2;
 
   public static final int frontLeftCANCoderCanId = 9;
   public static final int backLeftCANCoderCanId = 10;
@@ -77,7 +77,7 @@ public class DriveConstants {
   public static final double driveKd = 0.0;
   public static final double driveKs = 0.0;
   public static final double driveKv = 0.1;
-  public static final double driveSimP = 0.05;
+  public static final double driveSimP = 5.0;
   public static final double driveSimD = 0.0;
   public static final double driveSimKs = 0.0;
   public static final double driveSimKv = 0.0789;
@@ -86,7 +86,7 @@ public class DriveConstants {
   public static final boolean turnInverted = false;
   public static final int turnMotorCurrentLimit = 20;
   public static final double turnMotorReduction = 9424.0 / 203.0;
-  public static final DCMotor turnGearbox = DCMotor.getNeo550(1);
+  public static final DCMotor turnGearbox = DCMotor.getNEO(1);
 
   // Turn encoder configuration
   public static final boolean turnEncoderInverted = true;
@@ -96,7 +96,7 @@ public class DriveConstants {
   // Turn PID configuration
   public static final double turnKp = 2.0;
   public static final double turnKd = 0.0;
-  public static final double turnSimP = 8.0;
+  public static final double turnSimP = 5.0;
   public static final double turnSimD = 0.0;
   public static final double turnPIDMinInput = 0; // Radians
   public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
