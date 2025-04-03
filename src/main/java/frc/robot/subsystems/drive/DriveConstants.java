@@ -15,7 +15,6 @@ package frc.robot.subsystems.drive;
 
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -62,7 +61,9 @@ public class DriveConstants {
   public static final int driveMotorCurrentLimit = 50;
   public static final double wheelRadiusMeters = Units.inchesToMeters(1.5);
   public static final double driveMotorReduction =
-  (50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0); // MAXSwervwith 14 pinion teeth and 22 spur teeth
+      (50.0 / 14.0)
+          * (17.0 / 27.0)
+          * (45.0 / 15.0); // MAXSwervwith 14 pinion teeth and 22 spur teeth
   public static final DCMotor driveGearbox = DCMotor.getNeoVortex(1);
 
   // Drive encoder configuration

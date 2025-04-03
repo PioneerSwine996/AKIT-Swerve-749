@@ -13,7 +13,16 @@
 
 package frc.robot.subsystems.drive;
 
-import static frc.robot.subsystems.drive.DriveConstants.*;
+import static frc.robot.subsystems.drive.DriveConstants.driveGearbox;
+import static frc.robot.subsystems.drive.DriveConstants.driveMotorReduction;
+import static frc.robot.subsystems.drive.DriveConstants.driveSimD;
+import static frc.robot.subsystems.drive.DriveConstants.driveSimKs;
+import static frc.robot.subsystems.drive.DriveConstants.driveSimKv;
+import static frc.robot.subsystems.drive.DriveConstants.driveSimP;
+import static frc.robot.subsystems.drive.DriveConstants.turnGearbox;
+import static frc.robot.subsystems.drive.DriveConstants.turnMotorReduction;
+import static frc.robot.subsystems.drive.DriveConstants.turnSimD;
+import static frc.robot.subsystems.drive.DriveConstants.turnSimP;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -29,8 +38,8 @@ public class ModuleIOSim implements ModuleIO {
 
   private boolean driveClosedLoop = false;
   private boolean turnClosedLoop = false;
-  private PIDController driveController = new PIDController(driveSimP, 0, driveSimD);
-  private PIDController turnController = new PIDController(turnSimP, 0, turnSimD);
+  private final PIDController driveController = new PIDController(driveSimP, 0, driveSimD);
+  private final PIDController turnController = new PIDController(turnSimP, 0, turnSimD);
   private double driveFFVolts = 0.0;
   private double driveAppliedVolts = 0.0;
   private double turnAppliedVolts = 0.0;

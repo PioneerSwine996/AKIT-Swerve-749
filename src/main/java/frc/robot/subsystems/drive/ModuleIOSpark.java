@@ -13,21 +13,51 @@
 
 package frc.robot.subsystems.drive;
 
-import static frc.robot.subsystems.drive.DriveConstants.*;
-import static frc.robot.util.SparkUtil.*;
+import static frc.robot.subsystems.drive.DriveConstants.backLeftCANCoderCanId;
+import static frc.robot.subsystems.drive.DriveConstants.backLeftDriveCanId;
+import static frc.robot.subsystems.drive.DriveConstants.backLeftTurnCanId;
+import static frc.robot.subsystems.drive.DriveConstants.backLeftZeroRotation;
+import static frc.robot.subsystems.drive.DriveConstants.backRightCANCoderCanId;
+import static frc.robot.subsystems.drive.DriveConstants.backRightDriveCanId;
+import static frc.robot.subsystems.drive.DriveConstants.backRightTurnCanId;
+import static frc.robot.subsystems.drive.DriveConstants.backRightZeroRotation;
+import static frc.robot.subsystems.drive.DriveConstants.driveEncoderPositionFactor;
+import static frc.robot.subsystems.drive.DriveConstants.driveEncoderVelocityFactor;
+import static frc.robot.subsystems.drive.DriveConstants.driveKd;
+import static frc.robot.subsystems.drive.DriveConstants.driveKp;
+import static frc.robot.subsystems.drive.DriveConstants.driveKs;
+import static frc.robot.subsystems.drive.DriveConstants.driveKv;
+import static frc.robot.subsystems.drive.DriveConstants.driveMotorCurrentLimit;
+import static frc.robot.subsystems.drive.DriveConstants.frontLeftCANCoderCanId;
+import static frc.robot.subsystems.drive.DriveConstants.frontLeftDriveCanId;
+import static frc.robot.subsystems.drive.DriveConstants.frontLeftTurnCanId;
+import static frc.robot.subsystems.drive.DriveConstants.frontLeftZeroRotation;
+import static frc.robot.subsystems.drive.DriveConstants.frontRightCANCoderCanId;
+import static frc.robot.subsystems.drive.DriveConstants.frontRightDriveCanId;
+import static frc.robot.subsystems.drive.DriveConstants.frontRightTurnCanId;
+import static frc.robot.subsystems.drive.DriveConstants.frontRightZeroRotation;
+import static frc.robot.subsystems.drive.DriveConstants.odometryFrequency;
+import static frc.robot.subsystems.drive.DriveConstants.turnEncoderInverted;
+import static frc.robot.subsystems.drive.DriveConstants.turnEncoderPositionFactor;
+import static frc.robot.subsystems.drive.DriveConstants.turnEncoderVelocityFactor;
+import static frc.robot.subsystems.drive.DriveConstants.turnInverted;
+import static frc.robot.subsystems.drive.DriveConstants.turnKd;
+import static frc.robot.subsystems.drive.DriveConstants.turnKp;
+import static frc.robot.subsystems.drive.DriveConstants.turnMotorCurrentLimit;
+import static frc.robot.subsystems.drive.DriveConstants.turnPIDMaxInput;
+import static frc.robot.subsystems.drive.DriveConstants.turnPIDMinInput;
+import static frc.robot.util.SparkUtil.ifOk;
+import static frc.robot.util.SparkUtil.sparkStickyFault;
+import static frc.robot.util.SparkUtil.tryUntilOk;
 
-import com.ctre.phoenix6.StatusSignal;
-// import com.revrobotics.AbsoluteEncoder;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
-import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
@@ -37,8 +67,6 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.measure.Angle;
-
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
 
@@ -53,7 +81,7 @@ public class ModuleIOSpark implements ModuleIO {
   private final SparkMax driveSpark;
   private final SparkMax turnSpark;
   private final RelativeEncoder driveEncoder;
-  private final CANcoder  turnEncoder;
+  private final CANcoder turnEncoder;
 
   // Closed loop controllers
   private final SparkClosedLoopController driveController;
@@ -67,7 +95,6 @@ public class ModuleIOSpark implements ModuleIO {
   // Connection debouncers
   private final Debouncer driveConnectedDebounce = new Debouncer(0.5);
   private final Debouncer turnConnectedDebounce = new Debouncer(0.5);
-
 
   public ModuleIOSpark(int module) {
     zeroRotation =
@@ -99,16 +126,16 @@ public class ModuleIOSpark implements ModuleIO {
             },
             MotorType.kBrushless);
     turnEncoder =
-            new CANcoder(
-                switch (module) {
-                case 0 -> frontLeftCANCoderCanId;
-                case 1 -> frontRightCANCoderCanId;
-                case 2 -> backLeftCANCoderCanId;
-                case 3 -> backRightCANCoderCanId;
-                default -> 0;
-                });
+        new CANcoder(
+            switch (module) {
+              case 0 -> frontLeftCANCoderCanId;
+              case 1 -> frontRightCANCoderCanId;
+              case 2 -> backLeftCANCoderCanId;
+              case 3 -> backRightCANCoderCanId;
+              default -> 0;
+            });
+
     driveEncoder = driveSpark.getEncoder();
-    turnEncoder = turnEncoder.getAbsolutePosition();
     driveController = driveSpark.getClosedLoopController();
     turnController = turnSpark.getClosedLoopController();
 
@@ -187,7 +214,9 @@ public class ModuleIOSpark implements ModuleIO {
     drivePositionQueue =
         SparkOdometryThread.getInstance().registerSignal(driveSpark, driveEncoder::getPosition);
     turnPositionQueue =
-        SparkOdometryThread.getInstance().registerSignal(turnSpark, turnEncoder.getAbsolutePosition());
+        SparkOdometryThread.getInstance()
+            .registerSignal(
+                turnSpark, (() -> turnEncoder.getAbsolutePosition().getValueAsDouble()));
   }
 
   @Override
@@ -207,9 +236,12 @@ public class ModuleIOSpark implements ModuleIO {
     sparkStickyFault = false;
     ifOk(
         turnSpark,
-        turnEncoder.getAbsolutePosition().asSupplier(),
+        (() -> turnEncoder.getAbsolutePosition().getValueAsDouble()),
         (value) -> inputs.turnPosition = new Rotation2d(value).minus(zeroRotation));
-    ifOk(turnSpark, turnEncoder.getVelocity().getValueAsDouble().asSupplier(), (value) -> inputs.turnVelocityRadPerSec = value);
+    ifOk(
+        turnSpark,
+        (() -> turnEncoder.getAbsolutePosition().getValueAsDouble()),
+        (value) -> inputs.turnVelocityRadPerSec = value);
     ifOk(
         turnSpark,
         new DoubleSupplier[] {turnSpark::getAppliedOutput, turnSpark::getBusVoltage},
