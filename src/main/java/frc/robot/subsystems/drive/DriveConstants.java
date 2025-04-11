@@ -25,7 +25,7 @@ public class DriveConstants {
   public static final ModuleConfig moduleConfig = switch (Constants.currentMode) {
     case SIM -> new ModuleConfig(
             PIDF.ofPDSV(0.05, 0.0, 0.02522, 0.14115),
-            PIDF.ofPD(8, 0),
+            PIDF.ofPD(12,0.005),
             Mk4iGearRatios.L2,
             Mk4iGearRatios.TURN,
             false,
@@ -42,7 +42,7 @@ public class DriveConstants {
                     Util.average(0.13551, 0.13733, 0.13543, 0.14087),
                     Util.average(0.0065694, 0.0054738, /* [erroneous], */ 0.0091241)
             ),
-            PIDF.ofPD(0.5, 0.0),
+            PIDF.ofPD(0.025, 0.01),
             Mk4iGearRatios.L2,
             Mk4iGearRatios.TURN,
             false,
