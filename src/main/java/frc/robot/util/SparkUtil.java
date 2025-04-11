@@ -15,16 +15,25 @@ package frc.robot.util;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkBase;
+
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class SparkUtil {
-  /** Stores whether any error was has been detected by other utility methods. */
+  protected static final Executor asyncExecutor = Executors.newFixedThreadPool(4);
+
+  /**
+   * Stores whether any error was has been detected by other utility methods.
+   */
   public static boolean sparkStickyFault = false;
 
-  /** Processes a value from a Spark only if the value is valid. */
+  /**
+   * Processes a value from a Spark only if the value is valid.
+   */
   public static void ifOk(SparkBase spark, DoubleSupplier supplier, DoubleConsumer consumer) {
     double value = supplier.getAsDouble();
     if (spark.getLastError() == REVLibError.kOk) {
@@ -34,9 +43,10 @@ public class SparkUtil {
     }
   }
 
-  /** Processes a value from a Spark only if the value is valid. */
-  public static void ifOk(
-      SparkBase spark, DoubleSupplier[] suppliers, Consumer<double[]> consumer) {
+  /**
+   * Processes a value from a Spark only if the value is valid.
+   */
+  public static void ifOk(SparkBase spark, DoubleSupplier[] suppliers, Consumer<double[]> consumer) {
     double[] values = new double[suppliers.length];
     for (int i = 0; i < suppliers.length; i++) {
       values[i] = suppliers[i].getAsDouble();
@@ -48,8 +58,10 @@ public class SparkUtil {
     consumer.accept(values);
   }
 
-  /** Attempts to run the command until no error is produced. */
-  public static void tryUntilOk(SparkBase spark, int maxAttempts, Supplier<REVLibError> command) {
+  /**
+   * Attempts to run the command until no error is produced.
+   */
+  public static void tryUntilOk(int maxAttempts, Supplier<REVLibError> command) {
     for (int i = 0; i < maxAttempts; i++) {
       var error = command.get();
       if (error == REVLibError.kOk) {
@@ -58,5 +70,17 @@ public class SparkUtil {
         sparkStickyFault = true;
       }
     }
+  }
+
+  /**
+   * Attempts to run the command until no error is produced.
+   */
+  public static void tryUntilOkAsync(int maxAttempts, Supplier<REVLibError> command) {
+    asyncExecutor.execute(() -> tryUntilOk(maxAttempts, command));
+  }
+
+  // Keeping this as a utility function in case we need to ignore a certain fault or something
+  public static boolean hasFault(SparkBase spark) {
+    return spark.hasActiveFault();
   }
 }

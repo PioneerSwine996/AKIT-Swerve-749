@@ -15,12 +15,14 @@ package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.subsystems.drive.DriveConstants.*;
+import static frc.robot.subsystems.drive.DriveTuning.moduleDriveGainsTunable;
+import static frc.robot.subsystems.drive.DriveTuning.moduleTurnGainsTunable;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.pathfinding.Pathfinding;
-import com.pathplanner.lib.util.PathPlannerLogging;
+//import com.pathplanner.lib.auto.AutoBuilder;
+//import com.pathplanner.lib.config.PIDConstants;
+//import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+//import com.pathplanner.lib.pathfinding.Pathfinding;
+//import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
@@ -44,7 +46,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
-import frc.robot.util.LocalADStarAK;
+//import frc.robot.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -90,26 +92,26 @@ public class Drive extends SubsystemBase {
     SparkOdometryThread.getInstance().start();
 
     // Configure AutoBuilder for PathPlanner
-    AutoBuilder.configure(
-        this::getPose,
-        this::setPose,
-        this::getChassisSpeeds,
-        this::runVelocity,
-        new PPHolonomicDriveController(
-            new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
-        ppConfig,
-        () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-        this);
-    Pathfinding.setPathfinder(new LocalADStarAK());
-    PathPlannerLogging.setLogActivePathCallback(
-        (activePath) -> {
-          Logger.recordOutput(
-              "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
-        });
-    PathPlannerLogging.setLogTargetPoseCallback(
-        (targetPose) -> {
-          Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
-        });
+//    AutoBuilder.configure(
+//        this::getPose,
+//        this::setPose,
+//        this::getChassisSpeeds,
+//        this::runVelocity,
+//        new PPHolonomicDriveController(
+//            new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+//        ppConfig,
+//        () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+//        this);
+//    Pathfinding.setPathfinder(new LocalADStarAK());
+//    PathPlannerLogging.setLogActivePathCallback(
+//        (activePath) -> {
+//          Logger.recordOutput(
+//              "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
+//        });
+//    PathPlannerLogging.setLogTargetPoseCallback(
+//        (targetPose) -> {
+//          Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+//        });
 
     // Configure SysId
     sysId =
@@ -180,6 +182,17 @@ public class Drive extends SubsystemBase {
 
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+
+    moduleDriveGainsTunable.ifChanged(hashCode(), gains -> {
+      for (var module : modules) {
+        module.setDrivePIDF(gains);
+      }
+    });
+    moduleTurnGainsTunable.ifChanged(hashCode(), gains -> {
+      for (var module : modules) {
+        module.setTurnPIDF(gains);
+      }
+    });
   }
 
   /**
